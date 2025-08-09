@@ -7,3 +7,4 @@ python-jose[cryptography]
 passlib[bcrypt]
 httpx
 gunicorn>=21.2.0
+email-validator
