@@ -11,6 +11,16 @@ A minimal FastAPI-based backend prepared to support 24/7 assistance via chat, em
 docker compose up --build
 ```
 
+## Heroku
+
+- Ensure a Procfile exists (web dyno):
+  `web: gunicorn -k uvicorn.workers.UvicornWorker app.main:app --log-level info --workers ${WEB_CONCURRENCY:-2} --bind 0.0.0.0:${PORT}`
+- Set config vars (e.g., CORS_ORIGINS, API_KEY, SMTP_*).
+- Scale dynos:
+  ```bash
+  heroku ps:scale web=1
+  ```
+
 ## API
 
 - POST `/v1/support/request`
@@ -35,6 +45,7 @@ Environment variables:
 - SUPPORT_TEAM_EMAIL
 - REDIS_URL
 - SUPPORT_FORWARD_NUMBER
+- CORS_ORIGINS, API_KEY
 
 When SMTP is not configured, emails are printed to console (dev friendly).
 
