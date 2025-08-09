@@ -9,3 +9,4 @@ httpx
 gunicorn>=21.2.0
 email-validator
 alembic
+pytest

@@ -3,6 +3,13 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 import os
+import sys
+from pathlib import Path
+
+# Ensure project root is on sys.path
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -13,15 +20,18 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Get target metadata from models
-from app.db.base import Base  # noqa: E402
-from app.models.ticket import Ticket  # noqa: F401,E402
-from app.models.message import Message  # noqa: F401,E402
+from app.db.session import Base  # noqa: E402
+# Import models so tables are registered on Base.metadata
+import app.db.models  # noqa: F401,E402
 
 target_metadata = Base.metadata
 
 # Override sqlalchemy.url from env if provided
 database_url = os.getenv("DATABASE_URL")
 if database_url:
+    # Normalize postgres scheme if needed (defensive)
+    if database_url.startswith("postgres://"):
+        database_url = "postgresql://" + database_url[len("postgres://"):]
     config.set_main_option("sqlalchemy.url", database_url)
 
 

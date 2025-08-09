@@ -12,7 +12,7 @@ Updated: 2025-08-09
 ## Current Status
 - FastAPI service scaffolded with 24/7 support intent (chat, email, phone).
 - Endpoints:
-  - Health: GET /
+  - Health: GET / and GET /health (reports app version and DB status)
   - Support intake: POST /v1/support/request (channel=email|chat|phone)
   - Tickets: GET/POST /v1/tickets, GET/PATCH /v1/tickets/{id}
   - Messages: GET/POST /v1/messages, GET /v1/messages/{id}
@@ -22,20 +22,37 @@ Updated: 2025-08-09
 - Config and Security:
   - CORS middleware (configurable origins, headers, methods)
   - Optional API key guard (header: X-API-Key) via env var API_KEY
+  - App metadata (APP_NAME, APP_VERSION) via settings
+  - DATABASE_URL normalization (postgres -> postgresql for SQLAlchemy)
   - .env.example added; real .env files are ignored by Git
 - Containerization:
   - Dockerfile with curl for healthcheck
-  - docker-compose with env wiring (SMTP, CORS, API key, Redis)
-- Repo hygiene: .gitignore and .dockerignore added
+  - docker-compose with env wiring (SMTP, CORS, API key, Redis, Postgres)
+- Database & Migrations:
+  - SQLAlchemy 2.x Base/engine/session configured
+  - ORM models: Ticket, Message
+  - Alembic scaffolding with initial migration
+  - /health checks DB connectivity
+- CI/CD & Deployment:
+  - GitHub Actions: PR CI (ruff lint, smoke test, pytest)
+  - Docker image build/push to GHCR on tags only (concurrency guarded)
+  - Heroku Procfile (gunicorn with uvicorn workers)
+  - Release phase runs Alembic migrations (upgrade head) then health check
+  - Heroku web dyno scaled and app serving 200 on GET /
 
 ## How to Run (Dev)
 1) Copy envs and edit as needed:
    cp .env.example .env
-2) Start services:
+2) Start services (API + Postgres + Redis):
    docker compose up --build
-3) Visit docs: http://localhost:8000/docs
+3) Apply DB migrations (first run and after model changes):
+   - Inside compose: docker compose run --rm web alembic upgrade head
+   - Or locally: DATABASE_URL=postgresql://... alembic upgrade head
+4) Visit docs: http://localhost:8000/docs
 
 ## Configuration (key envs)
+- APP_NAME / APP_VERSION: app metadata
+- DATABASE_URL: e.g. postgresql://user:pass@db:5432/app ("postgres://" will be normalized)
 - CORS_ORIGINS: comma-separated origins (use explicit domains in prod)
 - API_KEY: optional; when set, require header X-API-Key on requests
 - SMTP_*: SMTP_HOST/PORT/USER/PASSWORD/FROM
@@ -43,13 +60,39 @@ Updated: 2025-08-09
 - REDIS_URL: redis://redis:6379/0 (placeholder for bg tasks later)
 - SUPPORT_FORWARD_NUMBER: for phone integrations
 
+## Recently Completed
+- Fixed dependencies for EmailStr (email-validator) and httpx for tests
+- Normalized DATABASE_URL for SQLAlchemy
+- Added SQLAlchemy Base/session and models (Ticket, Message)
+- Added Alembic and initial migration; health endpoint reports DB status
+- Heroku release phase runs migrations before health check; app healthy
+- CI on PRs; Docker images published on tags to GHCR
+- Replaced in-memory Tickets/Messages with DB-backed CRUD, schemas, pagination/filtering
+- Fixed Alembic env import path; added created_at migration; migrations applied
+- Added integration tests for CRUD; passing via docker compose
+
 ## Next Steps (Roadmap)
-- Email: select provider (SMTP or SendGrid) and enable retries
-- Chat: integrate Slack/MS Teams (webhook or app), secrets management
-- Phone: Twilio voice webhooks for inbound + call forwarding, call logs
-- Persistence: SQLAlchemy models + Alembic migrations for tickets/messages/requests
-- Jobs: background queue (RQ or Celery) with Redis, retries, DLQ
-- Security: rate limiting, structured logging, request ID, security headers
-- Observability: metrics (Prometheus), tracing, Sentry, uptime checks
-- CI/CD: GitHub Actions (tests, lint, build, image push), deploy pipeline
-- Ops: on-call escalation (PagerDuty/Opsgenie), rotation and runbooks
+- CI/CD:
+  - Update CI to run integration tests (compose services + alembic) or add a compose-based test job
+  - Add mypy type checking and coverage gating
+  - Versioning and release process (tag v0.1.0 after DB CRUD lands)
+- Email:
+  - Add retries/timeouts for SMTP; structured error handling
+  - Optional: pluggable provider with SendGrid integration (env toggle)
+- Chat:
+  - Integrate Slack via Incoming Webhook (env: SLACK_WEBHOOK_URL)
+  - Secrets management and minimal retry/backoff
+- Phone:
+  - Add Twilio webhooks for inbound calls and status callbacks
+  - Implement call forwarding to SUPPORT_FORWARD_NUMBER and persist call logs
+- Jobs:
+  - Introduce background queue (RQ or Celery) with Redis for notifications
+  - Add retries and DLQ pattern for failed jobs
+- Security:
+  - Rate limiting (fastapi-limiter with Redis)
+  - Structured logging + request ID middleware; security headers hardening
+- Observability:
+  - Prometheus metrics (prometheus-fastapi-instrumentator)
+  - Tracing (OpenTelemetry) and Sentry error tracking (SENTRY_DSN)
+- Ops:
+  - On-call escalation integration (PagerDuty/Opsgenie) and runbooks

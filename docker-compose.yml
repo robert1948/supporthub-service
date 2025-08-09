@@ -22,6 +22,7 @@ services:
       - SUPPORT_TEAM_EMAIL=${SUPPORT_TEAM_EMAIL:-support@example.com}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - SUPPORT_FORWARD_NUMBER=${SUPPORT_FORWARD_NUMBER}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://supporthub_user:password@db:5432/supporthub_db}
     depends_on:
       - db
       - redis
@@ -37,8 +38,6 @@ services:
       POSTGRES_USER: supporthub_user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: supporthub_db
-    ports:
-      - "5432:5432"
 
   redis:
     image: redis:7

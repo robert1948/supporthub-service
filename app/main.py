@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes import tickets, messages
 from app.routes import support
 from app.core.config import settings
-from app.db.session import db_health
+from app.db.session import db_health, get_sessionmaker, get_engine
 
 __version__ = "0.1.0"
 
