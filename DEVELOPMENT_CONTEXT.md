@@ -70,11 +70,11 @@ Updated: 2025-08-09
 - Replaced in-memory Tickets/Messages with DB-backed CRUD, schemas, pagination/filtering
 - Fixed Alembic env import path; added created_at migration; migrations applied
 - Added integration tests for CRUD; passing via docker compose
+- CI updated to include mypy type checking and coverage gating (80% threshold)
+- Added GitHub Actions integration-tests workflow (Postgres/Redis services; Alembic migrate; live API tests)
 
 ## Next Steps (Roadmap)
 - CI/CD:
-  - Update CI to run integration tests (compose services + alembic) or add a compose-based test job
-  - Add mypy type checking and coverage gating
   - Versioning and release process (tag v0.1.0 after DB CRUD lands)
 - Email:
   - Add retries/timeouts for SMTP; structured error handling
