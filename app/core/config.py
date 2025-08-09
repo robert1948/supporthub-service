@@ -4,11 +4,14 @@ class Settings:
     APP_NAME: str = os.getenv("APP_NAME", "SupportHub Service")
     APP_VERSION: str = os.getenv("APP_VERSION", os.getenv("GIT_SHA", "dev"))
 
-    # Database
-    DATABASE_URL: str | None = os.getenv("DATABASE_URL")
-
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
+
+    # Database
+    _db_url = os.getenv("DATABASE_URL")
+    if _db_url and _db_url.startswith("postgres://"):
+        _db_url = "postgresql://" + _db_url[len("postgres://"):]
+    DATABASE_URL: str | None = _db_url
 
     # Email (SMTP)
     SMTP_HOST: str | None = os.getenv("SMTP_HOST")

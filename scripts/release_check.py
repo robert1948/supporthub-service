@@ -1,14 +1,22 @@
+import os
 import sys
 from fastapi.testclient import TestClient
 
-try:
-    from app.main import app
-except Exception as e:
-    print(f"Release check import failed: {e}", file=sys.stderr)
-    sys.exit(1)
+
+def _normalize_db_url():
+    url = os.getenv("DATABASE_URL")
+    if url and url.startswith("postgres://"):
+        os.environ["DATABASE_URL"] = "postgresql://" + url[len("postgres://"):]
 
 
 def main() -> int:
+    try:
+        _normalize_db_url()
+        from app.main import app  # import after env normalization
+    except Exception as e:
+        print(f"Release check import failed: {e}", file=sys.stderr)
+        return 1
+
     try:
         client = TestClient(app)
         resp = client.get("/")
