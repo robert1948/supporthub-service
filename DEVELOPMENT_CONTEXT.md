@@ -18,7 +18,8 @@ Updated: 2025-08-09
   - Messages: GET/POST /v1/messages, GET /v1/messages/{id}
 - Notifications service:
   - Email via SMTP (prints to console in dev when SMTP is not configured)
-  - Chat + Phone placeholders (integration points for Slack/Twilio, etc.)
+  - Chat via Slack Incoming Webhook when SLACK_WEBHOOK_URL is set; dev-logs otherwise
+  - Phone placeholders (integration points for Twilio)
 - Config and Security:
   - CORS middleware (configurable origins, headers, methods)
   - Optional API key guard (header: X-API-Key) via env var API_KEY
@@ -58,6 +59,7 @@ Updated: 2025-08-09
 - SMTP_*: SMTP_HOST/PORT/USER/PASSWORD/FROM
 - SUPPORT_TEAM_EMAIL: default support email
 - REDIS_URL: redis://redis:6379/0 (placeholder for bg tasks later)
+- SLACK_*: SLACK_WEBHOOK_URL, SLACK_CHANNEL, SLACK_USERNAME, SLACK_ICON_EMOJI
 - SUPPORT_FORWARD_NUMBER: for phone integrations
 
 ## Recently Completed
@@ -72,6 +74,7 @@ Updated: 2025-08-09
 - Added integration tests for CRUD; passing via docker compose
 - CI updated to include mypy type checking and coverage gating (80% threshold)
 - Added GitHub Actions integration-tests workflow (Postgres/Redis services; Alembic migrate; live API tests)
+- Slack Incoming Webhook support added to notifications with retry/backoff
 
 ## Next Steps (Roadmap)
 - CI/CD:
@@ -80,8 +83,7 @@ Updated: 2025-08-09
   - Add retries/timeouts for SMTP; structured error handling
   - Optional: pluggable provider with SendGrid integration (env toggle)
 - Chat:
-  - Integrate Slack via Incoming Webhook (env: SLACK_WEBHOOK_URL)
-  - Secrets management and minimal retry/backoff
+  - Document Slack setup in README and add minimal unit test for payload shape
 - Phone:
   - Add Twilio webhooks for inbound calls and status callbacks
   - Implement call forwarding to SUPPORT_FORWARD_NUMBER and persist call logs

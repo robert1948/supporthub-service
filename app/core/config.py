@@ -24,6 +24,12 @@ class Settings:
     # Phone
     SUPPORT_FORWARD_NUMBER: str | None = os.getenv("SUPPORT_FORWARD_NUMBER")
 
+    # Chat (Slack)
+    SLACK_WEBHOOK_URL: str | None = os.getenv("SLACK_WEBHOOK_URL")
+    SLACK_CHANNEL: str | None = os.getenv("SLACK_CHANNEL")
+    SLACK_USERNAME: str = os.getenv("SLACK_USERNAME", APP_NAME)
+    SLACK_ICON_EMOJI: str | None = os.getenv("SLACK_ICON_EMOJI")
+
     # CORS
     _origins_raw = os.getenv("CORS_ORIGINS", "*")
     if _origins_raw.strip() in ("", "*"):

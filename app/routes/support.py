@@ -1,6 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel, EmailStr, Field
 from app.services.notifications import notifications
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -25,12 +26,12 @@ def create_support_request(data: SupportRequest, bg: BackgroundTasks):
     if data.channel == "email":
         bg.add_task(
             notifications.send_email,
-            to="support@example.com",
+            to=settings.SUPPORT_TEAM_EMAIL,
             subject=f"[Support] {data.subject}",
             body=summary,
         )
     elif data.channel == "chat":
-        bg.add_task(notifications.send_chat, channel="#support", message=summary)
+        bg.add_task(notifications.send_chat, channel=settings.SLACK_CHANNEL, message=summary)
     elif data.channel == "phone":
         if not data.phone_from:
             raise HTTPException(status_code=400, detail="phone_from required when channel=phone")

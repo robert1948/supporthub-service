@@ -3,6 +3,10 @@ from typing import Optional
 import smtplib
 from email.mime.text import MIMEText
 from email.utils import formataddr
+import json
+import time
+
+import httpx
 
 from app.core.config import settings
 
@@ -28,9 +32,47 @@ class NotificationService:
             server.login(user, pwd)
             server.send_message(msg)
 
-    def send_chat(self, channel: str, message: str) -> None:
-        # Placeholder: integrate Slack/Discord/MS Teams webhook here
-        print(f"[Chat DEV] Channel: {channel} | Message: {message}")
+    def send_chat(self, channel: Optional[str], message: str) -> None:
+        """Send a chat message via Slack Incoming Webhook if configured, else dev-log.
+
+        If SLACK_WEBHOOK_URL is not set, prints to console. Supports optional
+        channel override, username and icon emoji from settings.
+        Includes simple retry/backoff for transient errors.
+        """
+        webhook = settings.SLACK_WEBHOOK_URL
+        if not webhook:
+            print(f"[Chat DEV] Channel: {channel or settings.SLACK_CHANNEL or '#support'} | Message: {message}")
+            return
+
+        payload = {
+            "text": message,
+        }
+        if channel or settings.SLACK_CHANNEL:
+            payload["channel"] = channel or settings.SLACK_CHANNEL
+        if settings.SLACK_USERNAME:
+            payload["username"] = settings.SLACK_USERNAME
+        if settings.SLACK_ICON_EMOJI:
+            payload["icon_emoji"] = settings.SLACK_ICON_EMOJI
+
+        max_attempts = 3
+        backoff = 1.0
+        for attempt in range(1, max_attempts + 1):
+            try:
+                resp = httpx.post(webhook, json=payload, timeout=10)
+                if resp.status_code in (200, 204):
+                    return
+                # Slack webhooks may return 5xx on transient issues
+                if 500 <= resp.status_code < 600:
+                    raise RuntimeError(f"Slack error {resp.status_code}: {resp.text}")
+                # For other errors, do not retry
+                print(f"[Chat ERROR] Slack webhook responded {resp.status_code}: {resp.text}")
+                return
+            except Exception as e:
+                if attempt == max_attempts:
+                    print(f"[Chat ERROR] Failed to send after {attempt} attempts: {e}")
+                    return
+                time.sleep(backoff)
+                backoff *= 2
 
     def forward_phone_call(self, from_number: str, to_number: Optional[str] = None) -> None:
         # Placeholder: integrate Twilio inbound webhook + call forward
