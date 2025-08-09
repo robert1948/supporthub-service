@@ -1,27 +1,26 @@
-name: Docker Image
+name: Release
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'Dockerfile'
-      - 'app/**'
-      - 'requirements.txt'
   workflow_dispatch:
-
-concurrency:
-  group: docker-${{ github.ref }}
-  cancel-in-progress: true
+    inputs:
+      version:
+        description: 'Semver version (e.g., v0.1.0)'
+        required: true
 
 jobs:
-  build:
+  tag-and-build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Create tag
+        run: |
+          git tag ${{ inputs.version }}
+          git push origin ${{ inputs.version }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -33,13 +32,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push image
+      - name: Build and push versioned image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
+            ghcr.io/${{ github.repository }}:${{ inputs.version }}
             ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
