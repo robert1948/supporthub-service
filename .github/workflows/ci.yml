@@ -1,5 +1,9 @@
 name: CI
 
+# Note: This workflow runs on pull requests to ensure that CI checks are
+# performed before merging. Heroku auto-deploys on main, so we avoid
+# duplicating deployments by not running this workflow on pushes to main.
+
 on:
   pull_request:
     branches: [ main ]

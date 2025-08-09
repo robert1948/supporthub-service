@@ -1,0 +1,25 @@
+{
+  "name": "SupportHub Service",
+  "description": "FastAPI backend for 24/7 support (chat, email, phone)",
+  "env": {
+    "CORS_ORIGINS": { "required": true, "value": "https://example.com" },
+    "API_KEY": { "required": false },
+    "SMTP_HOST": { "required": false },
+    "SMTP_PORT": { "required": false, "value": "587" },
+    "SMTP_USER": { "required": false },
+    "SMTP_PASSWORD": { "required": false },
+    "SMTP_FROM_EMAIL": { "required": false, "value": "no-reply@supporthub.local" },
+    "SUPPORT_TEAM_EMAIL": { "required": false, "value": "support@example.com" },
+    "REDIS_URL": { "required": false, "value": "redis://redis:6379/0" },
+    "SUPPORT_FORWARD_NUMBER": { "required": false }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "buildpacks": [
+    { "url": "heroku/python" }
+  ]
+}

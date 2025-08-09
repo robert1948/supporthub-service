@@ -53,3 +53,21 @@ When SMTP is not configured, emails are printed to console (dev friendly).
 
 - Build image from `Dockerfile` and run behind a reverse proxy.
 - Set env vars and secrets for SMTP, chat webhooks, and telephony provider.
+
+## CI/CD Strategy
+
+- Heroku Auto Deploy from GitHub on main (single source of deploy).
+- GitHub Actions CI runs on pull requests only.
+- Docker image builds happen on version tags (v*). Use Releases to publish images.
+
+### Tagging a release
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+This triggers the Docker workflow to build and push:
+- ghcr.io/<owner>/<repo>:v0.1.0
+- ghcr.io/<owner>/<repo>:latest
+- ghcr.io/<owner>/<repo>:<commit-sha>
