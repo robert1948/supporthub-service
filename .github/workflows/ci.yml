@@ -1,9 +1,13 @@
 name: CI
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint-and-test:
@@ -27,7 +31,7 @@ jobs:
 
       - name: Lint (ruff)
         run: ruff check .
-        continue-on-error: true  # Allow initial adoption without failing builds
+        continue-on-error: true
 
       - name: Smoke test (FastAPI root endpoint)
         run: |
