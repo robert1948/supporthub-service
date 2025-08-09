@@ -98,3 +98,29 @@ Updated: 2025-08-09
   - Tracing (OpenTelemetry) and Sentry error tracking (SENTRY_DSN)
 - Ops:
   - On-call escalation integration (PagerDuty/Opsgenie) and runbooks
+
+## Phased Rollout Plan
+- Phase 0: Stabilize v0.1.x
+  - Goals: Keep CI green (ruff, mypy, coverage>=80), integration-tests workflow stable, Heroku release migrations OK.
+  - Success: /health 200 in prod; CRUD endpoints functional; no failing CI on main.
+- Phase 1: Chat notifications (Slack) GA → v0.2.0
+  - Tasks: Document SLACK_* setup; minimal unit test for payload shape; validate retries/backoff; enable via env in staging then prod.
+  - Success: Support requests post to Slack reliably when SLACK_WEBHOOK_URL is set.
+- Phase 2: Email hardening → v0.3.0
+  - Tasks: Add SMTP timeouts/retries; structured error handling; pluggable email provider; optional SendGrid; feature flag.
+  - Success: Robust delivery with graceful fallbacks and clear logs.
+- Phase 3: Background jobs → v0.4.0
+  - Tasks: Introduce RQ/Celery with Redis; move notifications off request path; retries + DLQ; worker health.
+  - Success: Async notifications with DLQ visibility.
+- Phase 4: Security → v0.5.0
+  - Tasks: Enforce API key in prod; rate limiting (fastapi-limiter); security headers; request ID logging.
+  - Success: Abuse protected; traceable requests.
+- Phase 5: Observability → v0.6.0
+  - Tasks: Prometheus metrics; OpenTelemetry tracing; Sentry errors; dashboards.
+  - Success: Metrics and traces available with alerts.
+- Phase 6: Phone (Twilio) → v0.7.0
+  - Tasks: Inbound webhooks; call forwarding; persist call logs (models/migrations).
+  - Success: Test call flows end-to-end.
+- Phase 7: Ops → v0.8.0
+  - Tasks: PagerDuty/Opsgenie integration; runbooks; escalation tests.
+  - Success: Test incident routes to on-call.
