@@ -1,13 +1,13 @@
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import text
-from sqlalchemy.exc import SQLAlchemyError
 from app.routes import tickets, messages
 from app.routes import support
 from app.core.config import settings
-from app.db.session import engine
+from app.db.session import db_health
 
-app = FastAPI(title="SupportHub Service", description="24/7 Support — chat, email, or phone.")
+__version__ = "0.1.0"
+
+app = FastAPI(title="SupportHub Service", description="24/7 Support — chat, email, or phone.", version=__version__)
 
 # CORS
 app.add_middleware(
@@ -34,16 +34,8 @@ def root():
 
 @app.get("/health")
 def health():
-    db_ok = False
-    db_error = None
-    try:
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-            db_ok = True
-    except SQLAlchemyError as e:
-        db_error = str(e)
     return {
         "status": "ok",
-        "version": settings.APP_VERSION,
-        "db": {"ok": db_ok, "error": db_error},
+        "version": __version__,
+        "db": db_health(),
     }

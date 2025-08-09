@@ -1,22 +1,43 @@
 from __future__ import annotations
-from typing import Generator
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from typing import Generator, Optional
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from app.core.config import settings
 
-if not settings.DATABASE_URL:
-    # Default to in-memory SQLite for dev if DATABASE_URL not provided
-    SQLALCHEMY_DATABASE_URL = "sqlite+pysqlite:///:memory:"
-    connect_args = {"check_same_thread": False}
-else:
-    SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
-    connect_args = {}
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=False, future=True, connect_args=connect_args)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, future=True)
+class Base(DeclarativeBase):
+    pass
+
+_engine = None
+SessionLocal: Optional[sessionmaker] = None
+
+if settings.DATABASE_URL:
+    _engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True)
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=_engine)
+
+
+def get_engine():
+    return _engine
+
+
+def get_sessionmaker():
+    return SessionLocal
+
+
+def db_health() -> str:
+    if not _engine:
+        return "disabled"
+    try:
+        with _engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        return "up"
+    except Exception:
+        return "down"
 
 
 def get_db() -> Generator:
+    if not SessionLocal:
+        raise RuntimeError("DATABASE_URL not configured")
     db = SessionLocal()
     try:
         yield db
