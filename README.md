@@ -71,3 +71,19 @@ This triggers the Docker workflow to build and push:
 - ghcr.io/<owner>/<repo>:v0.1.0
 - ghcr.io/<owner>/<repo>:latest
 - ghcr.io/<owner>/<repo>:<commit-sha>
+
+## Database & Migrations
+
+- Configure DATABASE_URL (e.g., from Heroku Postgres or RDS)
+- Run migrations locally:
+  ```bash
+  alembic upgrade head
+  ```
+- On deploy (Heroku), run:
+  ```bash
+  heroku run alembic upgrade head -a <app-name>
+  ```
+
+## Health Endpoint
+
+- GET /health -> { status, version, db: { ok, error } }

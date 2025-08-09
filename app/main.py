@@ -1,8 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from app.routes import tickets, messages
 from app.routes import support
 from app.core.config import settings
+from app.db.session import engine
 
 app = FastAPI(title="SupportHub Service", description="24/7 Support — chat, email, or phone.")
 
@@ -28,3 +31,19 @@ app.include_router(support.router, prefix="/v1/support", tags=["Support"], depen
 @app.get("/")
 def root():
     return {"message": "SupportHub API running"}
+
+@app.get("/health")
+def health():
+    db_ok = False
+    db_error = None
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            db_ok = True
+    except SQLAlchemyError as e:
+        db_error = str(e)
+    return {
+        "status": "ok",
+        "version": settings.APP_VERSION,
+        "db": {"ok": db_ok, "error": db_error},
+    }
