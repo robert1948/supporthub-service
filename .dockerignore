@@ -1,0 +1,48 @@
+# Exclude VCS
+.git
+.gitignore
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+*$py.class
+
+# Environments
+.venv
+venv
+ENV
+env
+
+# Build / dist
+build
+/dist
+.eggs
+*.egg-info
+wheels
+
+# Tests & coverage
+.pytest_cache
+.tox
+.nox
+.coverage
+.coverage.*
+.cache
+htmlcov
+
+# Editor / OS
+.vscode
+.idea
+*.iml
+.DS_Store
+Thumbs.db
+
+# Local files
+*.log
+logs
+*.db
+
+# Docker compose override
+/docker-compose.override.yml

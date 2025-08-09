@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+dist/
+.eggs/
+*.egg-info/
+*.egg
+wheels/
+
+# Logs
+logs/
+*.log
+
+# Unit test / coverage
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache/
+cover/
+coverage.xml
+htmlcov/
+.hypothesis/
+
+# Type checking / lint
+.mypy_cache/
+.pytype/
+.pyre/
+.ruff_cache/
+.pyright/
+
+# Environments
+.env
+.env.*
+.venv/
+venv/
+env/
+ENV/
+
+# IDEs / editors
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Databases
+*.db
+
+# Docker compose overrides
+docker-compose.override.yml
